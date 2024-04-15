@@ -19,34 +19,8 @@ def load_data(data_dir):
 
             # Add annotated cells and their labels to the dataset
             for cell in annotated_cells:
-                images.append(cell)  # Add segmented cell image
-                labels.append(get_label(filename))  # Add label for the cell
-
-    return np.array(images), np.array(labels)
-
-# MyDataset.py
-
-import os
-from PIL import Image
-import numpy as np
-
-def load_data(data_dir):
-    images = []
-    labels = []
-
-    # Iterate through BMP files in the data directory
-    for filename in os.listdir(data_dir):
-        if filename.endswith(".bmp"):
-            # Load BMP image
-            image = Image.open(os.path.join(data_dir, filename))
-
-            # Perform segmentation to identify annotated cells
-            annotated_cells = segment_cells(image)
-
-            # Add annotated cells and their labels to the dataset
-            for cell in annotated_cells:
-                images.append(cell)  # Add segmented cell image
-                labels.append(get_label(filename))  # Add label for the cell
+                images.append(cell)  
+                labels.append(get_label(filename))
 
     return np.array(images), np.array(labels)
 
