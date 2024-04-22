@@ -1,23 +1,42 @@
-# MyTrainings.py
+import logging
+import torch
+import torch.nn as nn
+import torch.optim as optim
 
-import tensorflow as tf
-from MyModels import segmentation_model, classification_model
-from MyDataset import load_data
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 
-# Load data
-data_dir = "path/to/annotated_data"
-images, labels = load_data(data_dir)
+def train_model(model, train_loader, num_epochs=10, lr=0.001):
+    criterion = nn.BCELoss()
+    optimizer = optim.Adam(model.parameters(), lr=lr)
 
-# Define model
-input_shape = images.shape[1:]  # Shape of the input images
-num_classes = len(set(labels))  # Number of classes (cell types)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model.to(device)
 
-# Choose segmentation or classification model
-model = segmentation_model(input_shape, num_classes)
-# model = classification_model(input_shape, num_classes)
+    for epoch in range(num_epochs):
+        model.train()
+        running_loss = 0.0
+        for batch_idx, images in enumerate(train_loader):
+            images = images.to(device)
 
-# Compile model
-model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+            optimizer.zero_grad()
 
-# Train model
-model.fit(images, labels, epochs=10, batch_size=32, validation_split=0.2)
+            outputs = model(images)
+            outputs = outputs.float()  # Cast to float
+            loss = criterion(outputs, images)  # Reconstruction loss
+
+            loss.backward()
+            optimizer.step()
+
+            running_loss += loss.item() * images.size(0)
+
+            # Log loss after every `log_interval` batches
+            log_interval = 100  # Adjust as needed
+            if (batch_idx + 1) % log_interval == 0:
+                current_loss = running_loss / ((batch_idx + 1) * train_loader.batch_size)
+                logging.info(f"Epoch [{epoch + 1}/{num_epochs}], Batch [{batch_idx + 1}/{len(train_loader)}], Loss: {current_loss:.4f}")
+
+        epoch_loss = running_loss / len(train_loader.dataset)
+        logging.info(f"Epoch [{epoch + 1}/{num_epochs}], Loss: {epoch_loss:.4f}")
+
+    logging.info("Training complete!")
