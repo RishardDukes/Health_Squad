@@ -1,56 +1,36 @@
-# MyDataset.py
-
+# MyDatasets.py
 import os
-from PIL import Image
+import cv2
 import numpy as np
+from torch.utils.data import Dataset
 
-def load_data(data_dir):
-    images = []
-    labels = []
+class MyDataset(Dataset):
+    def __init__(self, data_dir):
+        self.data_dir = data_dir
+        self.image_paths = sorted([os.path.join(data_dir, img) for img in os.listdir(data_dir)])
 
-    # Iterate through BMP files in the data directory
-    for filename in os.listdir(data_dir):
-        if filename.endswith(".bmp"):
-            # Load BMP image
-            image = Image.open(os.path.join(data_dir, filename))
+    def __len__(self):
+        return len(self.image_paths)
 
-            # Perform segmentation to identify annotated cells
-            annotated_cells = segment_cells(image)
+    def __getitem__(self, idx):
+        img_path = self.image_paths[idx]
+        image = cv2.imread(img_path)
+        # Preprocess the image
+        preprocessed_img = self.preprocess(image)
+        return preprocessed_img
 
-            # Add annotated cells and their labels to the dataset
-            for cell in annotated_cells:
-                images.append(cell)  
-                labels.append(get_label(filename))
+    def preprocess(self, image):
+        # Convert to grayscale
+        gray_img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        # Threshold to separate black elements from other areas
+        _, threshold_img = cv2.threshold(gray_img, 1, 255, cv2.THRESH_BINARY)
+        # Convert to binary image
+        binary_img = threshold_img / 255
+        # Expand dimensions to match expected input shape
+        return np.expand_dims(binary_img, axis=0)
 
-    return np.array(images), np.array(labels)
 
-def segment_cells(image):
-    # Convert image to grayscale
-    gray_image = image.convert("L")
 
-    # Threshold image to get binary mask
-    _, binary_image = cv2.threshold(np.array(gray_image), 0, 255, cv2.THRESH_BINARY)
 
-    # Find contours in the binary image
-    contours, _ = cv2.findContours(binary_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-    # Extract bounding boxes from contours
-    bounding_boxes = []
-    for contour in contours:
-        x, y, w, h = cv2.boundingRect(contour)
-        bounding_boxes.append((x, y, w, h))
-
-    # Extract cells using bounding boxes
-    cells = []
-    for x, y, w, h in bounding_boxes:
-        cell_image = image.crop((x, y, x + w, y + h))
-        cells.append(cell_image)
-
-    return cells
-
-def get_label(filename):
-    # Extract label from filename (assuming filename format: label_index.bmp)
-    label = filename.split("_")[0]
-    return label
 
 
