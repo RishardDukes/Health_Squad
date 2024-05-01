@@ -1,21 +1,17 @@
-# MyModels.py
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+import tensorflow as tf
 
-class MyModel(nn.Module):
+class MyModel(tf.keras.Model):
     def __init__(self):
         super(MyModel, self).__init__()
-        # Define the model architecture
-        self.conv1 = nn.Conv2d(1, 32, kernel_size=3, padding=1).double()
-        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, padding=1).double()
-        self.conv3 = nn.Conv2d(64, 128, kernel_size=3, padding=1).double()
-        self.conv4 = nn.Conv2d(128, 1, kernel_size=3, padding=1).double()
+        self.conv1 = tf.keras.layers.Conv2D(16, kernel_size=3, padding='same', activation='relu')
+        self.conv2 = tf.keras.layers.Conv2D(32, kernel_size=3, padding='same', activation='relu')
+        self.conv3 = tf.keras.layers.Conv2D(64, kernel_size=3, padding='same', activation='relu')
+        self.conv4 = tf.keras.layers.Conv2D(1, kernel_size=3, padding='same', activation='sigmoid')
 
-    def forward(self, x):
+    def call(self, x):
         # Forward pass
-        x = F.relu(self.conv1(x))
-        x = F.relu(self.conv2(x))
-        x = F.relu(self.conv3(x))
-        x = torch.sigmoid(self.conv4(x))  # Sigmoid activation for binary classification
+        x = self.conv1(x)
+        x = self.conv2(x)
+        x = self.conv3(x)
+        x = self.conv4(x)
         return x
