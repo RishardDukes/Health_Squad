@@ -1,10 +1,9 @@
-# MyDatasets.py
 import os
 import cv2
 import numpy as np
-from torch.utils.data import Dataset
+import tensorflow as tf
 
-class MyDataset(Dataset):
+class MyDataset:
     def __init__(self, data_dir):
         self.data_dir = data_dir
         self.image_paths = sorted([os.path.join(data_dir, img) for img in os.listdir(data_dir)])
@@ -27,7 +26,20 @@ class MyDataset(Dataset):
         # Convert to binary image
         binary_img = threshold_img / 255
         # Expand dimensions to match expected input shape
-        return np.expand_dims(binary_img, axis=0)
+        return np.expand_dims(binary_img, axis=-1)
+
+    def create_dataset(self, batch_size):
+        dataset = tf.data.Dataset.from_tensor_slices(self.image_paths)
+        dataset = dataset.map(self.load_and_preprocess_image)
+        dataset = dataset.batch(batch_size)
+        return dataset
+
+    def load_and_preprocess_image(self, img_path):
+        image = tf.io.read_file(img_path)
+        image = tf.image.decode_png(image, channels=1)  
+        image = tf.image.convert_image_dtype(image, tf.float32)
+        return image
+
 
 
 
