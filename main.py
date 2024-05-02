@@ -4,19 +4,12 @@ from MyModels import MyModel
 from MyTrainings import train_model
 import tensorflow as tf
 import os
-<<<<<<< HEAD
-=======
 import matplotlib.pyplot as plt
->>>>>>> e63ff97 (Adding everything)
 
 def main():
     # Define paths
     train_data_dir = "/workspaces/Health_Squad/sample_data/dataset_complete"
-<<<<<<< HEAD
-    test_data_dir = "/workspaces/Health_Squad/sample_data/unlabel_sample_data"
-=======
     test_data_dir = "/workspaces/Health_Squad/sample_data/dataset_label/bmp_images"
->>>>>>> e63ff97 (Adding everything)
     output_dir = "/workspaces/Health_Squad/bmp_images"
 
     # Initialize datasets
@@ -30,21 +23,14 @@ def main():
     # Initialize model
     model = MyModel()
 
-<<<<<<< HEAD
-    # Train the model
-    train_model(model, train_loader)
-=======
     # Train the model and collect metrics
     loss, accuracy = train_model(model, train_loader)
->>>>>>> e63ff97 (Adding everything)
 
     # Save the model
     model_path = os.path.join(output_dir, "model.h5")
     model.save(model_path)
     print(f"Model saved at {model_path}")
 
-<<<<<<< HEAD
-=======
     # Plot loss and accuracy
     plot_metrics(loss, accuracy)
 
@@ -69,6 +55,5 @@ def plot_metrics(loss, accuracy):
     plt.title('Loss and Accuracy vs Epoch')
     plt.show()
 
->>>>>>> e63ff97 (Adding everything)
 if __name__ == "__main__":
     main()
